@@ -160,11 +160,10 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
 
     //gshare global history register masking with n bits
     unsigned int globalMaskedVal = gshareGlobalRegister & gshareBitsMask;
-    //unsigned int globalTemp = gshareGlobalRegister;
+
     //refer to specification pdf for clear idea
     // n bits of PC xor with n bits from global history register
     unsigned int xorResult = (pcMaskedVal >> (pcBits - gshareBits)) ^ (globalMaskedVal);
-    //unsigned int xorResult = pcMaskedVal ^ (globalTemp << (pcBits - gshareBits));
 
     //Concatenate XOR result with PC
     unsigned int indexVal = (xorResult << (pcBits - gshareBits))
