@@ -1,2 +1,2 @@
-#Branch Predictor
-bimodal, gshare, hybrid and BTB implementation
+# BranchPredictor
+Implemented Bimodal, gshare and Hybrid Predictor in C++

@@ -11,7 +11,7 @@
 class Predictor
 {
 public:
-    // virtual ~Predictor();
+     virtual ~Predictor() {};
     // Factory Method
     static Predictor *get_predictor(char *predictor_type);
     virtual char prediction(unsigned int addr, char outCome, bool isValid) = 0;

@@ -47,7 +47,7 @@ void Bimodal::setBimodalTable(unsigned int bits)
     //memset(bimodalTable, 2, bimodalTableSize);
     for (unsigned int i = 0; i < bimodalTableSize; i++)
     {
-        bimodalTable[i] = 2;
+        bimodalTable[i] = 3;
     }
 }
 
@@ -160,11 +160,11 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
 
     //gshare global history register masking with n bits
     unsigned int globalMaskedVal = gshareGlobalRegister & gshareBitsMask;
-
+    //unsigned int globalTemp = gshareGlobalRegister;
     //refer to specification pdf for clear idea
     // n bits of PC xor with n bits from global history register
-    unsigned int xorResult = (pcMaskedVal >> (pcBits - gshareBits))
-            ^ globalMaskedVal;
+    unsigned int xorResult = (pcMaskedVal >> (pcBits - gshareBits)) ^ (globalMaskedVal);
+    //unsigned int xorResult = pcMaskedVal ^ (globalTemp << (pcBits - gshareBits));
 
     //Concatenate XOR result with PC
     unsigned int indexVal = (xorResult << (pcBits - gshareBits))
@@ -198,7 +198,8 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
     if (outCome == 't')
     {
         gshareGlobalRegister = gshareGlobalRegister >> 1;
-        gshareGlobalRegister |= (1 << (gshareBits - 1));
+        if(gshareBits)
+            gshareGlobalRegister |= (1 << (gshareBits - 1));
     }
     else
     {

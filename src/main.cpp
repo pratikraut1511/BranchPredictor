@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 {
     //Local variable declaration
     FILE *pFileHandler;                 // File handler for input trace file
-    char *trace_file;                   // to store file name from command line
+    char *trace_file = NULL;            // to store file name from command line
     char outCome;                       // t or n outcome
     unsigned int address;               // instruction
     unsigned int operationCount = 0;
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
     //Flag for BTB
     bool isBuffer = false;
-    bool isPresent;
+    bool isAddrPresent = false;
     //Expected input pattern
     /*
      * For Bimodal predictor
@@ -56,11 +56,9 @@ int main(int argc, char *argv[])
 
     //get predictor object
     predictorObj = Predictor::get_predictor(predictorTypeInput);
-    char fileName[10] = "gcc";
-    trace_file = fileName;
     if (strcmp(predictorTypeInput, "bimodal") == 0)
     {
-        static_cast<Bimodal*>(predictorObj)->setBimodalTable(atoi(argv[2]));
+        dynamic_cast<Bimodal*>(predictorObj)->setBimodalTable(atoi(argv[2]));
 
         if ((atoi(argv[3]) != 0) && (atoi(argv[4]) != 0))
         {
@@ -74,7 +72,8 @@ int main(int argc, char *argv[])
     }
     else if (strcmp(predictorTypeInput, "gshare") == 0)
     {
-        static_cast<Gshare*>(predictorObj)->setGshareTable(atoi(argv[2]),
+      // if()
+        dynamic_cast<Gshare*>(predictorObj)->setGshareTable(atoi(argv[2]),
                 atoi(argv[3]));
         if ((atoi(argv[4]) != 0) && (atoi(argv[5]) != 0))
         {
@@ -90,7 +89,7 @@ int main(int argc, char *argv[])
     else if (strcmp(predictorTypeInput, "hybrid") == 0)
     {
         trace_file = argv[8];
-        static_cast<Hybrid*>(predictorObj)->setHybridParams(atoi(argv[2]),
+        dynamic_cast<Hybrid*>(predictorObj)->setHybridParams(atoi(argv[2]),
                 atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
         if ((atoi(argv[6]) != 0) && (atoi(argv[7]) != 0))
         {
@@ -127,8 +126,8 @@ int main(int argc, char *argv[])
 #if DEBUG
             cout << hex << "PC: " << address << " " << outCome << endl;
 #endif
-            isPresent = bufferObj->bufferPredict(address, outCome);
-            if (isPresent)
+            isAddrPresent = bufferObj->bufferPredict(address, outCome);
+            if (isAddrPresent)
             {
 #if DEBUG
                 cout << "BTB HIT" << endl;
@@ -163,19 +162,10 @@ int main(int argc, char *argv[])
         predictorObj->printResult(1);
 #endif
 
-    if (strcmp(predictorTypeInput, "bimodal") == 0)
-    {
-        static_cast<Bimodal*>(predictorObj)->~Bimodal();
-    }
-    else if (strcmp(predictorTypeInput, "gshare") == 0)
-    {
-        static_cast<Gshare*>(predictorObj)->~Gshare();
-    }
-    else if (strcmp(predictorTypeInput, "hybrid") == 0)
-    {
-        static_cast<Hybrid*>(predictorObj)->~Hybrid();
-    }
+    //delete predictor object
+    delete predictorObj;
 
+    //delete BTB object
     if (isBuffer)
         delete bufferObj;
 
