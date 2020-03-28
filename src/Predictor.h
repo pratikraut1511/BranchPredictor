@@ -11,12 +11,14 @@
 class Predictor
 {
 public:
-     virtual ~Predictor() {};
-    // Factory Method
+    // singleton method
     static Predictor *get_predictor(char *predictor_type);
     virtual char prediction(unsigned int addr, char outCome, bool isValid) = 0;
     virtual void printResult(int isValid) = 0;
     virtual unsigned int getMissPredict() = 0;
+    virtual ~Predictor() {};
+private:
+    static Predictor* _instance;
 };
 
 class Bimodal: public Predictor

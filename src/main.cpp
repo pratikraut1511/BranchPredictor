@@ -8,6 +8,7 @@
 
 #include "defination.h"
 
+Predictor *Predictor::_instance = NULL;
 
 int main(int argc, char *argv[])
 {
@@ -18,7 +19,9 @@ int main(int argc, char *argv[])
     unsigned int address;               // instruction
     unsigned int operationCount = 0;
     string output;
+#if !DEBUG
     unsigned int predictorMiss = 0;
+#endif
     //Branch buffer
     BranchBuffer *bufferObj = NULL;
 

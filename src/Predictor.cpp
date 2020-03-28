@@ -10,14 +10,19 @@
 #include "BranchBuffer.h"
 
 //Interface class
-Predictor *Predictor::get_predictor(char *predictor_type)
+Predictor* Predictor::get_predictor(char *predictor_type)
 {
-    if (strcmp(predictor_type, "bimodal") == 0)
-        return new Bimodal;
-    else if (strcmp(predictor_type, "gshare") == 0)
-        return new Gshare;
-    else
-        return new Hybrid;
+    if (_instance == NULL)
+    {
+        if (strcmp(predictor_type, "bimodal") == 0)
+             (_instance = new Bimodal);
+        else if (strcmp(predictor_type, "gshare") == 0)
+             (_instance = new Gshare);
+        else
+             (_instance = new Hybrid);
+    }
+
+    return _instance;
 }
 
 //Functions for Bimodal predictor
@@ -44,7 +49,6 @@ void Bimodal::setBimodalTable(unsigned int bits)
     bimodalTableSize = pow(2, bits);
     indexMask = bimodalTableSize - 1;
     bimodalTable = new int[bimodalTableSize];
-    //memset(bimodalTable, 2, bimodalTableSize);
     for (unsigned int i = 0; i < bimodalTableSize; i++)
     {
         bimodalTable[i] = 3;
@@ -61,7 +65,7 @@ char Bimodal::prediction(unsigned int addr, char outCome, bool isValid)
     {
         cout << "PC: " << hex << addr << " " << outCome << endl;
         cout << "BIMODAL index: " << dec << indexVal << " old value: "
-        << bimodalTable[indexVal] << " new value ";
+                << bimodalTable[indexVal] << " new value ";
     }
 #endif
     bimodalTable[indexVal] >= 2 ? predictVal = 't' : predictVal = 'n';
@@ -73,7 +77,7 @@ char Bimodal::prediction(unsigned int addr, char outCome, bool isValid)
             bimodalTable[indexVal]--;
 #if DEBUG
         if (isValid)
-        cout << bimodalTable[indexVal] << endl;
+            cout << bimodalTable[indexVal] << endl;
 #endif
         if (predictVal != outCome)
             missPredicts++;
@@ -160,10 +164,12 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
 
     //gshare global history register masking with n bits
     unsigned int globalMaskedVal = gshareGlobalRegister & gshareBitsMask;
-
+    //unsigned int globalTemp = gshareGlobalRegister;
     //refer to specification pdf for clear idea
     // n bits of PC xor with n bits from global history register
-    unsigned int xorResult = (pcMaskedVal >> (pcBits - gshareBits)) ^ (globalMaskedVal);
+    unsigned int xorResult = (pcMaskedVal >> (pcBits - gshareBits))
+            ^ (globalMaskedVal);
+    //unsigned int xorResult = pcMaskedVal ^ (globalTemp << (pcBits - gshareBits));
 
     //Concatenate XOR result with PC
     unsigned int indexVal = (xorResult << (pcBits - gshareBits))
@@ -174,7 +180,7 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
     {
         // cout << "PC: " << hex << addr << " " << outCome << endl;
         cout << "GSHARE index: " << dec << indexVal << " old value: "
-        << gshareTable[indexVal] << " new value ";
+                << gshareTable[indexVal] << " new value ";
     }
 #endif
     gshareTable[indexVal] >= 2 ? predictVal = 't' : predictVal = 'n';
@@ -187,7 +193,7 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
             gshareTable[indexVal]--;
 #if DEBUG
         if (isValid)
-        cout << gshareTable[indexVal] << endl;
+            cout << gshareTable[indexVal] << endl;
 #endif
         if (predictVal != outCome)
             missPredicts++;
@@ -197,7 +203,7 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
     if (outCome == 't')
     {
         gshareGlobalRegister = gshareGlobalRegister >> 1;
-        if(gshareBits)
+        if (gshareBits)
             gshareGlobalRegister |= (1 << (gshareBits - 1));
     }
     else
@@ -205,7 +211,7 @@ char Gshare::prediction(unsigned int addr, char outCome, bool isValid)
         gshareGlobalRegister = gshareGlobalRegister >> 1;
     }
 #if DEBUG
-    cout << "BHR UPDATED:" << dec <<gshareGlobalRegister << endl;
+    cout << "BHR UPDATED:" << dec << gshareGlobalRegister << endl;
 #endif
     return predictVal;
 }
@@ -309,7 +315,7 @@ char Hybrid::prediction(unsigned int addr, char outCome, bool isValid)
         //cout << "Actual prediction " << outCome << "  bimodal " << bimodalPredictVal
         //<< "  gshare  " << gsharePredictVal << endl;
         cout << "CHOOSER: " << " old value: " << hybridCounterTable[index]
-        << " new value ";
+                << " new value ";
     }
 #endif
     if ((gsharePredictVal == outCome) && (bimodalPredictVal != outCome))
@@ -324,7 +330,7 @@ char Hybrid::prediction(unsigned int addr, char outCome, bool isValid)
     }
 #if DEBUG
     if (isValid)
-    cout << hybridCounterTable[index] << endl;
+        cout << hybridCounterTable[index] << endl;
 #endif
     //Update the total number of predictions
     totalPredictions++;
